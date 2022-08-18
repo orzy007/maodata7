@@ -23,11 +23,11 @@ This is a template example for lab journaling. Students in Matt Crump's Human Co
 
 ## How to use MICROSOFT POWER BI
 
-1.
-2.
+1.log in to power bi
+2.go to 2021 mao data
 3.
 4.
-
+5.
 
 </div>
 <div class="col-sm-6">
