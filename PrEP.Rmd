@@ -1,0 +1,1261 @@
+---
+title: "2022 MAO ePrEP Project Data Plan"
+author: "MAO DATA"
+date: "02/06/2021"
+output: 
+  html_document:
+    number_sections: yes
+    toc: yes
+    theme: cerulean
+    toc_float: 
+      collapsed: TRUE
+      smooth_scroll: TRUE
+      keep_md: FALSE  # knitr processes an r makdown input file , creates a markdown file then it is transforme to html by pandoc . The markdown file occupies space so delete it to make d size of ur html
+---
+
+# PART 2 : MONTHLY DATA
+
+
+
+```{=html}
+<style type="text/css">
+h1 { /* Header 1 */
+  font-size: 28px;
+  color: Tomato;
+}
+
+  body{
+  font-size: 13pt;
+  font-family: "Calibri";
+  color: Black;
+}
+</style>
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(leaflet)
+library(rgdal)
+library(tigris) 
+library(tidyverse)
+library(sf)
+library(readxl)
+
+
+
+library(Hmisc)    # **** describe(df)    # lists all categorical variables and summarize numeriical
+library(pivottabler) #******VIP best for pivot table*** arguments:  qhpvt(df, rows, columns, calculations, ...) qhpvt(df, "app", "provider", "n()") # TOC = Train Operating Company  
+library(readxl)
+library(tidyverse)
+library(aod)
+library(ggplot2)
+library(gridExtra)
+library(VIM)
+library(dplyr)
+library(magrittr)
+library(skimr)
+library(naniar)
+
+library(pivottabler)
+library(rpivotTable)
+
+library(visdat)
+library(GGally)
+library(janitor)
+library(DT)
+library(data.table)
+library(ggmosaic)
+library(writexl)
+library(plotly)
+
+library(formattable)
+
+library(kableExtra)
+
+library(webshot)
+
+library(zoo)
+```
+
+<p>
+
+ 
+
+</p>
+
+<p>
+
+ 
+
+</p>
+
+
+
+<p>
+
+ 
+
+</p>
+
+-   Total number of unduplicated PrEP patients seen monthly. 
+
+
+
+
+
+```{r eval=F}
+
+ [1] "PatNamesort"             
+ [2] "ptn"                     
+ [3] "PatientChartNbr"         
+ [4] "EncounterNbr"            
+ [5] "ReasonClassDesc"         
+ [6] "ReasonDesc"              
+ [7] "EnctrOccurDate"          
+ [8] "EnctrOccurTime(12hr)"    
+ [9] "SvcCntrName"             
+[10] "ProviderName"            
+[11] "PatAssignedProvName"     
+[12] "PatDateofLastVisit"      
+[13] "PatLastVstDiagnosisCodes"
+[14] "PatDateofFirstVisit"     
+[15] "PatEthnicityDesc"        
+[16] "PatHomeAddrCity"         
+[17] "PatHomeAddrZip"          
+[18] "PatHomeAddrSt"           
+[19] "PatRaceDesc"             
+[20] "PatDOB"                  
+[21] "PatGenderDesc"           
+[22] "PatRegistrationDate"     
+[23] "EnctrStatusDesc"         
+[24] "EnctrTypeDesc"           
+[25] "PatLastInsBillDate"      
+[26] "PatDeceasedDate"         
+[27] "zipcode"                 
+[28] "zip2"                    
+[29] "TOTAL"                   
+[30] "MONTH_"
+```
+
+
+
+
+```{r warning = FALSE, message=FALSE}
+df<- read_excel("G:/EPREP 2022.xlsx", sheet = "monthDuplicatesRemoved")
+#df<- read_excel("G:/E PREP DATABASE.xlsx", sheet = "2021q4")
+df %<>% mutate(MONTH= zoo::as.yearmon(EnctrOccurDate))
+
+#matrixplot(df)
+#vis_dat(df,sort_type = F)
+#tabyl(df,MONTH)
+
+df2<-df %>%
+  group_by(MONTH)%>% 
+dplyr::summarise(Total_Monthly= n_distinct(ptn))%>% 
+             mutate('Cumulative Total Patients Seen per Month' = cumsum(Total_Monthly))%>%
+kable( booktabs = T,align = "c") %>%
+kable_paper(full_width=F,position="left", "hover") %>%
+ # row_spec(0, angle = -10) %>%
+ # kable_classic(full_width = FALSE) %>%
+column_spec(1, bold = T, border_right = T) %>%
+  column_spec(2, width = "10em") %>% # , background = "yellow"
+ column_spec(3, width = "10em", bold = T)
+
+df2
+#    library(mmtable2)
+#    df%>%
+#    mmtable(table_data = ptn)+
+#    header_top(MONTH)+
+#    header_left(PatRaceDesc)
+#    table_format(locations = row_list,style= style_list)
+#    colnames(df)
+```
+
+
+
+```{r}
+# TESTING SPARKLINE
+# mpg_list <- split(mtcars$mpg, mtcars$cyl)
+# disp_list <- split(mtcars$disp, mtcars$cyl)
+#inline_plot <- data.frame(cyl = c(4, 6, 8), mpg_box = "", mpg_hist = "",
+#                          mpg_line1 = "", mpg_line2 = "",
+#                          mpg_points1 = "", mpg_points2 = "", mpg_poly = "")
+#inline_plot %>%
+#  kbl(booktabs = TRUE) %>%
+#  kable_paper(full_width = FALSE) %>%
+#  column_spec(2, image = spec_boxplot(mpg_list)) %>%
+#  column_spec(3, image = spec_hist(mpg_list)) %>%
+#  column_spec(4, image = spec_plot(mpg_list, same_lim = TRUE)) %>%
+#  column_spec(5, image = spec_plot(mpg_list, same_lim = FALSE)) %>%
+ # column_spec(6, image = spec_plot(mpg_list, type = "p")) %>%
+ # column_spec(7, image = spec_plot(mpg_list, disp_list, type = "p")) %>%
+ # column_spec(8, image = spec_plot(mpg_list, polymin = 5))
+
+```
+
+
+```{r}
+#coef_table <- data.frame(
+##  Variables = c("var 1", "var 2", "var 3"),
+#  Coefficients = c(1.6, 0.2, -8.0),
+#  Conf.Lower = c(1.3, -0.4, -2.5),
+#  Conf.Higher = c(1.9, 8.6, -1.4)
+#) 
+
+#data.frame(
+#  Variable = coef_table$Variables,
+#  Visualization = ""
+#) %>%
+#  kbl(booktabs = T) %>%
+#  kable_classic(full_width = FALSE) %>%
+ # column_spec(2, image = spec_pointrange(
+ #   x = coef_table$Coefficients, 
+ #   xmin = coef_table$Conf.Lower, 
+ #   xmax = coef_table$Conf.Higher, 
+ #   vline = 0)
+ #   )
+
+```
+
+
+```{r}
+
+#df5<-df %>%
+#  group_by(MONTH) %>%
+#  dplyr::add_count(count4dplyr, MONTH)%>%
+#  ungroup()
+#View(df5)
+
+#df66<-df5%>%
+#   distinct(ptn, .keep_all=TRUE)%>%
+#  group_by(MONTH) %>%
+#  select(n)
+
+#df66
+```
+
+```{r}
+#dim(df5)
+# df6<-df %>%  
+#   group_by(MONTH) %>%
+#   dplyr::summarise(Total_Monthly= n_distinct(ptn))%>% 
+#   mutate('Cumulative Unduplicated Total Patients Seen per Month' = cumsum(Total_Monthly))
+# df6
+  #dplyr::mutate(occ = dplyr::row_number())
+#View(df5)
+```
+
+
+## Total number of unduplicated PrEP patients seen year to date is __184__ .   
+
+
+
+```{r}
+# remove
+#df<- read_excel("G:/E PREP DATABASE.xlsx", sheet = "Sheet1")
+#df<- read_excel("G:/E PREP DATABASE.xlsx", sheet = "zipcode #distance difference")
+#tabyl(df,SvcCntrName,ReasonDesc)
+#qhpvt(df, "ReasonDesc", "SvcCntrName", "n()")
+#library(rpivotTable)
+# rpivotTable(df1)
+```
+
+
+
+```{r eval=FALSE}
+# colnames(dfvisit)
+[1] "PatNamesort"             
+ [2] "ptn"                     
+ [3] "PatientChartNbr"         
+ [4] "EncounterNbr"            
+ [5] "ReasonClassDesc"         
+ [6] "ReasonDesc"              
+ [7] "EnctrOccurDate"          
+ [8] "EnctrOccurTime(12hr)"    
+ [9] "SvcCntrName"             
+[10] "ProviderName"            
+[11] "PatAssignedProvName"     
+[12] "PatDateofLastVisit"      
+[13] "PatLastVstDiagnosisCodes"
+[14] "PatDateofFirstVisit"     
+[15] "PatEthnicityDesc"        
+[16] "PatHomeAddrCity"         
+[17] "PatHomeAddrZip"          
+[18] "PatHomeAddrSt"           
+[19] "PatRaceDesc"             
+[20] "PatDOB"                  
+[21] "PatGenderDesc"           
+[22] "PatRegistrationDate"     
+[23] "EnctrStatusDesc"         
+[24] "EnctrTypeDesc"           
+[25] "PatLastInsBillDate"      
+[26] "PatDeceasedDate"  
+
+
+
+[27] "zipcode"                 
+[28] "zip2"                    
+[29] "TOTAL"                   
+[30] "MONTH_"     
+
+```
+
+
+```{r warning = FALSE, message=FALSE}
+
+#   df1 <- read_excel("G:/PREP ENCOUNTER ALL DEMOG.xlsx", sheet = "Sheet2")
+
+ dfvisit<- read_excel("G:/EPREP 2022.xlsx", sheet = "Sheet1")
+
+#dfvisit<- read_excel("G:/EPREP 2022.xlsx", sheet = "q2")
+# dim(dfvisit)
+
+
+
+#df<- read_excel("G:/E PREP DATABASE.xlsx", sheet = "2021q4")
+#vis_dat(dfvisit,sort_type = F)
+#View(df)
+#df<-distinct(df, .keep_all=TRUE)
+#tabyl(dfvisit,MONTH) 
+dfvisit2<-dfvisit %>% arrange(ptn, desc(EnctrOccurDate))
+df<-dfvisit2 %>%
+  mutate(EnctrOccurDate= as.Date(EnctrOccurDate, format= "%d.%m.%Y")) %>%
+  distinct(ptn, .keep_all = TRUE) # REMOVE DUPLICATES KEEP MOST RECENT
+
+
+
+#df<-distinct(dfvisit, ptn, .keep_all = TRUE)
+#dfs1<- df1[, c("ptn")] # SUBSET BY COLUMN NAME
+# VIS_DAT STUFF
+#vis_expect(df1, ~.x %in% dfmsm$ptn)
+#vis_expect(df1, ~.x %in% dfdeactive$ptn)
+#vis_guess(df1)
+#vis_dat(df1)
+
+#  dfs1<- df1[, c("ptn")] # SUBSET BY COLUMN NAME
+
+df %<>% mutate(MONTH= zoo::as.yearmon(EnctrOccurDate))
+
+#df %<>% mutate(yearmonth  = zoo::as.yearmon(EnctrOccurDate))
+
+df<-df %<>% mutate(quarter  = zoo::as.yearqtr(EnctrOccurDate,format="%Y-%m-%d"))
+
+df<-df %>%
+  dplyr::mutate(YEAR = lubridate::year(EnctrOccurDate), 
+                month = lubridate::month(EnctrOccurDate),
+                week = lubridate::week(EnctrOccurDate),
+                yday = lubridate::yday(EnctrOccurDate),  ####
+               quarter2 = lubridate::quarter(EnctrOccurDate),
+                day = lubridate::day(EnctrOccurDate))
+
+df=df%>%mutate_at("quarter", as.character)
+
+#dim(df)
+
+#dfmsm <- read_excel("G:/msm feb 2022.xlsx",sheet = "Sheet1")
+dfmsm <- read_excel("G:/msm july 2022.xlsx",sheet = "Sheet1")
+#  dim(dfmsm)
+#  colnames(dfmsm)
+dfmsm<-dfmsm%>%dplyr::select(ptn,msm)
+
+
+#dim(dfmsm)
+dfINS<- read_excel("G:/EPREP 2022.xlsx", sheet = "INS")
+dfINS<-dfINS%>%dplyr::select(ptn,INSURANCE)
+
+#vis_dat(df,sort_type = F)
+#vis_dat(dfmsm,sort_type = F)
+#vis_dat(dfINS,sort_type = F)
+
+df<-list(df,
+         dfmsm,
+         dfINS) %>% reduce(left_join, by = "ptn")
+
+#dim(df)
+
+#dfseenMonthly<-qhpvt(df, "YEAR", "MONTH", "n()")
+#dfseenMonthly
+#dfinacTable<-qhpvt(df, "YEAR", "inactive", "n()")
+#View(df)
+
+#  dim(df)
+
+
+df<-df %>% arrange(ptn, desc(EnctrOccurDate))
+
+
+df<-df %>%
+  mutate(EnctrOccurDate= as.Date(EnctrOccurDate, format= "%d.%m.%Y")) %>%
+  distinct(ptn, .keep_all = TRUE) # REMOVE DUPLICATES KEEP MOST RECENT
+
+#  dim(df)
+
+# rpivotTable(df)
+
+
+```
+
+
+
+```{r}
+
+#-   A crosstabulation of PrEP patients by date of last encounter and EMR status ( active or inactive)
+#tabyl(df,deactivated,ActiveS)%>%adorn_totals('row') %>%adorn_pct_formatting()
+
+#tabyl(df,MSMS,msm)
+
+#tabyl(df,MSMS)%>%adorn_totals('row') %>%adorn_pct_formatting()
+
+#tabyl(df,TRANSGENDERS)%>%adorn_totals('row') %>%adorn_pct_formatting()
+#tabyl(df,INSUREDS,PatCv1PlanName)
+
+#qhpvt(df,"PatCv1PlanName", "INSUREDS",  "n()")
+
+#tabyl(df,quarter)
+```
+
+```{r warning = FALSE}
+
+#dim(df)
+
+df %<>%            #  ds converts dob to date from posixt
+  mutate(PatientAge1= as.Date(PatDOB, format= "%d.%m.%Y"))     #  ds converts dob to date
+
+df$PatientAge1 = as.numeric(difftime(Sys.Date(),df$PatientAge1, units = "weeks"))/52.25
+
+df$PatientAge1 <- round(df$PatientAge1)
+
+
+#### RACE RECODE
+df$PatRaceDesc <- gsub("'", '', df$PatRaceDesc)
+
+df <- df %>%   
+     mutate_at(c("PatRaceDesc"),
+               funs(recode(., `American Indian or Alaska Native`='OTHER',
+                             `Asian`='ASIAN',
+                           `Black or African American`='AFRICAN AMERICAN',
+                           `Latino/Hispanic`='HISPANIC',
+                           `Native Hawaiian`='OTHER',
+                           `Other Pacific Islander`='OTHER',
+                           `Race Not Reported - Dont Know`='OTHER',
+                           `Race Not Reported - Not Ascertained`='OTHER',
+                           `Race Not Reported - Refusal`='OTHER',
+                          `White`='WHITE',
+                           	 .default ='CHECKmISSING')))
+
+
+
+#quarteryr<-as.charater(quarteryr)
+
+#toString(df$quarteryr)
+#df %>% mutate(employed=recode(employed, "FALSE"="prov"))
+
+#quarteryr <- data.frame(lapply(quarteryr, as.character))
+
+attach(df)
+df$AGE[PatientAge1 >= 65] <- "65+"
+df$AGE[PatientAge1 > 44 & PatientAge1 <= 64] <- "45-64"
+df$AGE[PatientAge1 > 24 & PatientAge1 <= 44] <- "25-44"
+df$AGE[PatientAge1 <= 24] <- "18-24"
+detach(df)
+
+
+#dfinacTable<-tabyl(df, YEAR, inactive)
+#dfinacTable
+#dfinacTable<-tabyl(df, YEAR, inactive)
+#dfinacTable
+#qhpvt(df, "AGE", "PatGenderDesc", "n()")
+#tabyl(df,quarter)
+
+#vis_guess(df)
+#vis_dat(df,sort_type = F)
+#View(df)
+
+#vis_dat(df,sort_type = F)
+
+#   rpivotTable(df)
+
+```
+
+
+
+
+```{r}
+#dfinacTable<-qhpvt(df, "YEAR", "inactive", "n()")
+#dfinacTable1<-as.data.frame(dfinacTable)
+#df$inactive[is.na(df$inactive)]<-"ACTIVE"
+#dfinacTable1<-as.data.frame(dfinacTable)
+#dfinacTable
+#dfinacTable<-qhpvt(df, "YEAR", "inactive", "n()")
+#tabyl(df, YEAR, inactive)
+#dfinacTable<-tabyl(df, YEAR, inactive)
+#dfinacTable1<-as.data.frame(dfinacTable)
+#dfinacTable1
+#d[is.na(d)]<-0
+#dfinacTable3<-dfinacTable1 %>%  rename("YEAR" ="YEAR",
+ #                                      "INACTIVE"="INACTIVE",
+#  
+
+#library(rpivotTable)
+#rpivotTable(df)
+
+```
+
+<p>
+
+ 
+
+</p>
+
+\newpage
+
+## PREP PATIENT BY DATE OF LAST ENCOUNTER
+
+<p>
+
+- On the y-axis, "ptn" represents patients medical record number.
+- Hovering around the dot shows the date of last encounter for the specific patient and the medical record number.
+
+ 
+ 
+ 
+
+</p>
+
+```{r  warning = FALSE, message=FALSE}
+library(crosstalk)
+library(reactable)
+
+EnctrOccurDate<-as.POSIXct
+quarter<-as.POSIXct
+
+#df<-df[1:20, c("ProviderName", "SvcCntrName", "ReasonDesc", "ptn","EnctrOccurDate","week)]
+
+df2<-df[ c("TOTAL", "ptn", "ReasonDesc","EnctrOccurDate","ProviderName","month","quarter")]
+data <-SharedData$new(df2)
+
+bscols(
+  widths = c(3, 9),
+  list(filter_slider("month", "MONTH OF LAST APPOINTMENT", data, ~month),
+    filter_select("mfr", "PROVIDER", data, ~ProviderName),
+    filter_select("qtr", "QUARTER", data, ~quarter),
+   # filter_checkbox("type", "APPOINTMENT TYPE", data, ~ReasonDesc),
+    filter_select("type", "APPOINTMENT TYPE", data, ~ReasonDesc)
+   # filter_slider("price", "ptn", data, ~ptn, width = "100%")
+   # filter_slider("EnctrOccurDate", "EnctrOccurDate", data, ~EnctrOccurDate)
+   # filter_slider("week", "week", data, ~EnctrOccurDate
+        ),
+# plot_ly(data, x = ~EnctrOccurDate, color = ~ReasonDesc) %>% config(displaylogo = FALSE)%>%add_histogram(),
+ plot_ly(data,type="scatter",y = ~ptn, x = ~EnctrOccurDate,color= ~ReasonDesc,alpha = 0.5),#,size= ~YEAR
+  reactable(data,
+            groupBy = "month",
+             columns=list(TOTAL=colDef(aggregate="count"),
+                          month=colDef(minWidth = 140)),
+            minRows = 5,
+            bordered=T,
+             striped=T,
+            pagination = F,
+            outlined=T,
+           highlight=T,
+          compact=F,
+          resizable=T,
+           theme=getOption("reactable.theme")),
+  reactable(data,
+            groupBy = "ReasonDesc",
+             columns=list(TOTAL=colDef(aggregate="count"),
+                         #TOTAL = colDef(footer = function(values) sprintf(sum(values))),  # not workin       
+                        # ProviderName=colDef(minWidth = 2),
+                        # ReasonDesc=colDef(footer="Total"),
+                          ReasonDesc=colDef(minWidth = 300)),
+            minRows = 8,
+            bordered=T,
+             striped=T,
+            pagination = F,
+            outlined=T,
+           highlight=T,
+          compact=F,
+          resizable=T,
+           theme=getOption("reactable.theme"))
+
+  )
+
+```
+
+<p>
+
+ 
+
+</p>
+
+<p>
+
+ 
+
+</p>
+
+\newpage
+
+
+# VISITS BY APPOINTMENT TYPE
+
+
+
+<p>&nbsp;</p>
+
+
+```{r}
+# VISITS
+
+#qhpvt(dfvisit, "month", "ReasonDesc", "n()")
+
+
+#tabyl(dfvisit,ReasonDesc)%>%
+#  adorn_totals('row')%>%
+#  adorn_pct_formatting()%>%
+# kable( booktabs = T) %>%
+# kable_paper(full_width=F,position="left", "hover")
+
+
+```
+
+
+
+```{r}
+#colnames(dfv)
+```
+
+
+```{r}
+#colnames(dfv)
+
+#tabyl(dfv,SvcCntrName)
+```
+
+
+
+
+
+
+```{r warning = FALSE, message=FALSE}
+library(lubridate)
+library(dplyr)
+library(zoo)
+#dfv <- read_excel("G:/PREP ENCOUNTER ALL DEMOG.xlsx", sheet = "Sheet1")
+#dfv <- read_excel("G:/PREP ENCOUNTER ALL DEMOG.xlsx", sheet = "prepvisit")
+
+dfv<- read_excel("G:/EPREP 2022.xlsx", sheet = "Sheet1")
+#vis_dat(dfvisit,sort_type = F)
+#View(df)
+EnctrOccurDate<-as.POSIXct
+
+dfv %<>% mutate(MONTH  = zoo::as.yearmon(EnctrOccurDate))
+dfv %<>% mutate(yearmonth3= as.Date(MONTH, format= "%b%y"))    #  ds converts yearmonth to date from posixt
+
+#plot(dfv2)
+#dfv3<-dfv2[-3] # drop column 3
+#vis_dat(dfv2)
+
+dfv<-dfv %<>% mutate(quarter  = zoo::as.yearqtr(EnctrOccurDate,format="%Y-%m-%d"))
+
+dfv<-dfv %>%
+  dplyr::mutate(YEAR = lubridate::year(EnctrOccurDate), 
+                month = lubridate::month(EnctrOccurDate),
+                week = lubridate::week(EnctrOccurDate),
+                yday = lubridate::yday(EnctrOccurDate),  ####
+               quarter2 = lubridate::quarter(EnctrOccurDate),
+                day = lubridate::day(EnctrOccurDate))
+
+# View(dfv)
+
+#  colnames(dfv)
+
+#esquisse::esquisser(dfv)
+#tabyl(dfv,month)
+```
+
+
+```{r}
+
+
+```
+
+
+```{r}
+
+# df<- subset(dfv, month <= 9)
+# tabyl(df,SvcCntrName,month)
+
+# df%>% 
+#   tabyl(SvcCntrName,month) %>%
+#   adorn_totals(where="row") %>%
+#   adorn_totals(where="col") %>%
+ # adorn_percentages("col") %>%
+#  adorn_pct_formatting(digits=2) %>%
+#  adorn_ns(position = "front") %>%
+#   kable( booktabs = T) %>%
+ #kable_styling(bootstrap_options = c("striped", "hover"))
+# kable_paper(full_width=F,position="left", "hover")
+```
+```{r}
+
+
+#  c<-df%>% tabyl(ReasonDesc,SvcCntrName)
+#  write_xlsx(c, "G:/rsn by cln.xlsx")  # OUT PUT TO CHECK
+```
+
+
+
+```{r warning = FALSE, message=FALSE}
+library(pivottabler)
+
+#dim(dfv)
+
+#dfv<-dfv%>%filter(quarter2%in% c(4))
+#dfv<-dfv%>%filter(quarter%in% c('2020 Q4'))
+
+#tabyl(dfv,ReasonDesc,AppoitmentType)%>%adorn_totals('row')
+#dim(dfv)
+
+#qhpvt(dfv,"ReasonDesc", "MONTH",  "n()")
+
+
+
+
+pt <- PivotTable$new()
+pt$styles$addStyle(styleName="NewHeadingStyle1", list(
+      "font-family"="Arial",
+      "font-size"="0.75em",
+      padding="2px",
+      border="1px solid lightgray",
+      "vertical-align"="middle",
+      "text-align"="center",
+      "font-weight"="bold",
+      #"background-color"="Gold",
+      "xl-wrap-text"="wrap"
+    ))
+pt$styles$addStyle(styleName="CellStyle1", list(
+      "font-family"="Arial",
+      "font-size"="0.75em",
+      padding="2px 2px 2px 8px",
+      border="1px solid lightgray",
+      "vertical-align"="middle",
+      #"background-color"="Yellow",
+      "text-align"="center"
+    ))
+pt$addData(dfv)
+pt$addColumnDataGroups("MONTH")      # row 1
+#pt$addColumnDataGroups("msm",addTotal=F)   # row2
+pt$addRowDataGroups("ReasonDesc") # ,totalCaption="Grand Total"  column 1
+pt$defineCalculation(calculationName="TotalTrains",
+                     summariseExpression="n()",
+                     cellBaseStyleName="CellStyle1",
+                     headingBaseStyleName="NewHeadingStyle1") #,format="%.1f"
+pt$evaluatePivot()
+pt$renderPivot(styleNamePrefix="orzy007")
+
+#tabyl(dfv,AppoitmentType)%>%adorn_totals('row') %>%adorn_pct_formatting()
+
+# define the font and colours
+```
+
+```{r warning = FALSE, message=FALSE}
+ggr<- dfv %>%
+  group_by(month,ReasonDesc) %>%
+  dplyr::summarise(count=n(),.groups="drop")
+
+# esquisse::esquisser(ggr)
+
+#  USING GGPLOT TO PLOT LINE CHART
+ # PL<-(ggplot(ggr) +
+#   aes(x = month, y = count, colour = ReasonDesc) +
+#   geom_line(size = 0.5) +
+#   scale_color_hue(direction = 1) +
+#   labs( x = "MONTH",
+ #    title = "PrEP APPOINTMENT TYPE TREND")+
+    #color = "ORANGE") +
+ #  theme_minimal() +
+ #  theme(plot.title = element_text(face = "bold", hjust = 0.5)))
+  # ggplotly(PL)
+
+ggr%>%
+  plot_ly(x=~month,
+          y=~count,
+          group_by=~ReasonDesc,
+       #  type="scatter",
+         color=~ReasonDesc, 
+         mode="lines+markers")%>%
+layout(title="PrEP APPOINTMENT TYPE TREND")%>%
+  config(displayModeBar=F)
+
+```
+
+
+
+
+\newpage
+
+
+# DEMOGRAPHICS
+
+<p>
+
+ 
+ 
+ 
+ 
+
+## AGE BY GENDER
+
+<p>
+
+ 
+
+ 
+ 
+
+```{r}
+qhpvt(df, "AGE", "PatGenderDesc", "n()")
+```
+
+
+
+```{r}
+
+```
+
+<p>
+
+ 
+
+</p>
+
+
+```{r}
+# colnames(df)
+```
+
+```{r warning = FALSE}
+
+df%>% 
+  tabyl(AGE,PatGenderDesc) %>%
+  adorn_totals(where="row") %>%
+  adorn_totals(where="col") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting(digits=2) %>%
+  adorn_ns(position = "front") %>%
+  kable( booktabs = T) %>%
+ #kable_styling(bootstrap_options = c("striped", "hover"))
+kable_paper(full_width=F,position="left", "hover")
+```
+
+```{r warning = FALSE}
+library(ggplot2)
+p1<-(ggplot(df, aes(x=as.factor(PatGenderDesc), fill=as.factor(AGE)))+
+  geom_bar(aes( y=..count../tapply(..count.., ..x.. ,sum)[..x..]), position="dodge" ) +
+  geom_text(aes( y=..count../tapply(..count.., ..x.. ,sum)[..x..], label=scales::percent(..count../tapply(..count.., ..x.. ,sum)[..x..]) ),
+            stat="count", position=position_dodge(0.9), vjust=-0.5)+
+  ylab('Percent of Age Group %') +
+    xlab('GENDER') +
+    theme(axis.text.x = element_text(angle = 45))+
+  scale_y_continuous(labels = scales::percent))
+
+p1
+
+#ggplotly(p1,height=400,width=600)
+
+```
+
+
+\newpage
+
+
+## AGE BY RACE
+
+<p>
+
+ 
+
+</p>
+
+```{r warning = FALSE}
+
+df%>% 
+  tabyl(AGE,PatRaceDesc) %>%
+  adorn_totals(where="row") %>%
+  adorn_totals(where="col") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting(digits=2) %>%
+  adorn_ns(position = "front") %>%
+  kable( booktabs = T) %>%
+ #kable_styling(bootstrap_options = c("striped", "hover"))
+kable_paper(full_width=F,position="left", "hover")
+```
+
+```{r}
+library(ggplot2)
+p1<-(ggplot(df, aes(x=as.factor(PatRaceDesc), fill=as.factor(AGE)))+
+  geom_bar(aes( y=..count../tapply(..count.., ..x.. ,sum)[..x..]), position="dodge" ) +
+  geom_text(aes( y=..count../tapply(..count.., ..x.. ,sum)[..x..], label=scales::percent(..count../tapply(..count.., ..x.. ,sum)[..x..]) ),
+            stat="count", position=position_dodge(0.9), vjust=-0.5)+
+  ylab('Percent of Age Group, %') +
+    xlab('RACE') +
+    theme(axis.text.x = element_text(angle = 45))+
+  scale_y_continuous(labels = scales::percent))
+
+ggplotly(p1,height=400,width=750)
+
+
+
+```
+
+
+
+<p>
+
+ 
+
+</p>
+
+
+\newpage
+
+## INSURANCE
+
+</p>
+
+
+
+
+
+```{r warning = FALSE}
+
+
+tabyl(df,INSURANCE)%>%
+  adorn_totals('row')%>%
+  adorn_pct_formatting()%>%
+ kable( booktabs = T,align = "c") %>%
+ kable_paper(full_width=F,position="left", "hover")
+
+```
+</p>
+## RISK
+
+</p>
+
+```{r warning = FALSE}
+
+df<-df %>% replace_na(list(msm = "HETEROSEXUAL")) #replace na in missing merged msm column with heterosexual
+
+
+df%>% 
+  tabyl(msm,PatGenderDesc) %>%
+  adorn_totals(where="row") %>%
+  adorn_totals(where="col") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting(digits=2) %>%
+  adorn_ns(position = "front") %>%
+  kable( booktabs = T) %>%
+ #kable_styling(bootstrap_options = c("striped", "hover"))
+kable_paper(full_width=F,position="left", "hover")
+
+```
+
+<p>
+
+ 
+
+</p>
+
+
+
+<p>
+
+ 
+
+</p>
+
+
+\newpage
+
+
+# NUMBER OF PATIENTS BY COUNTY
+
+<p>
+
+ 
+
+</p>
+
+<p>
+
+ 
+
+</p>
+
+
+```{r}
+# df<- read_excel("G:/aug to jan dill.xlsx", sheet = "new hiv prep aut to jan")
+
+
+```
+
+
+<p>
+
+ 
+
+</p>
+
+```{r}
+#colnames(df)
+#colnames(dfm)
+#colnames(dfz)
+#vis_dat(dfz,sort_type = F)
+#vis_dat(df,sort_type = F)
+```
+
+```{r warning = FALSE, message=FALSE}
+
+dfz<- read_excel("G:/ZIP_CODE_DATABASE22.xlsx",sheet = "Sheet1")
+
+
+#df <- read_excel("G:/msm between 13 - 34 MOST RECENT ENCOUNTER BY R_.xlsx",sheet = "13 to 34")
+#dim(df)
+#View(df)
+#colnames(dfz)
+
+
+#df <- sapply(df[, c(18)], as.numeric)
+
+#df<-df %>%  rename("zipcode"="PatHomeAddrZip") # rename  PatHomeAddrZip to zipcode so dt df can be merged with my county zipcode data base
+
+dfm= df %>% left_join(dfz,by="zipcode")
+# describe(dfz)
+# tabyl(dfz,county,state)
+#vis_dat(dfm,sort_type = FALSE)
+
+
+# GROUP AND COUNT COUNTY that you just merged
+dfcountygp<-dfm %>%
+  group_by(county) %>%
+  dplyr::summarise(density=n())
+
+dfcountygp1<-dfm %>%
+  group_by(county) %>%
+  dplyr::summarise(density=n())
+
+
+dfcountygp<-dfcountygp %>%  dplyr::rename("NAME"="county")
+
+# rpivotTable(dfm)
+```
+
+```{r include = FALSE}
+library(sf)
+st_drivers()
+#knitr::opts_chunk$set(echo = FALSE)
+# read alabama county shae file into dfc 
+dfc <- counties("01")
+st_drivers()
+
+
+
+#colnames(df)
+```
+
+```{r warning = FALSE, message=FALSE}
+#dfa <- read_excel("G:/alabama merge to get chloropleth leaflet.xlsx",sheet ="Sheet5")
+
+
+
+dfm= dfc %>% left_join(dfcountygp,by="NAME")
+
+
+
+#df$INTPTLON2 = as.numeric(gsub("\\-", "", df$INTPTLON))
+
+# get removed from simple note
+
+```
+
+
+
+
+
+
+
+
+</p>
+
+```{r  warning = FALSE, message=FALSE}
+
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
+library(maptools)
+library(ggthemes)
+
+usa <- map_data("county")  # get basic map data for all USA counties 
+
+al = subset(usa, region == "alabama")  # subset to counties in AL 
+
+
+library(stringr)
+al$county = str_to_title(al$subregion)  # Create a new variable called county with the correct format
+
+library(sp) 
+getLabelPoint <- # Returns a county-named list of label points
+function(county){Polygon(county[c('long', 'lat')])@labpt}
+centroids = by(al, al$county, getLabelPoint)     # Returns list
+centroids2 <- do.call("rbind.data.frame", centroids)  # Convert to Data Frame
+centroids2$county = rownames(centroids)
+names(centroids2) <- c('clong', 'clat', "county")
+```
+
+
+
+
+```{r  warning = FALSE}
+
+dfm2= al %>% left_join(dfcountygp1,by="county")
+
+ff<-(ggplot() + 
+  geom_polygon(data = dfm2, aes(x = long, y = lat, 
+   group = group,
+    fill = density), color = "black") + 
+ coord_fixed(1.3) +
+  geom_text(data = centroids2, aes(x = clong, y = clat, label = county), 
+            color = "black", size = 2.25) + 
+  scale_fill_distiller(palette = "YlOrRd",direction=-1,trans="reverse") + # palette eg GrandBudapest1 ,Spectral,Darjeeling1
+  labs(fill = "Number of PrEP Clients") + 
+  theme_map() + theme(legend.position = "bottom"))
+  
+  
+# ds prints out leaflet map 
+ pp12 <-ggplotly(ff, tooltip= "density",height=900,width=900)
+ pp12
+
+#head(dfm2)
+
+```
+
+<p>
+
+
+
+
+
+
+
+\newpage
+
+
+
+
+
+## NUMBER OF PATIENTS BY COUNTY
+
+```{r}
+
+#    dfm= df %>% left_join(dfz,by="zipcode")
+#colnames(dfm)
+
+#   countyTable<-tabyl(dfm,county)%>%
+#    arrange(desc(n))%>%
+ #    adorn_totals('row')%>%
+ #    adorn_pct_formatting()%>%
+#    kable( booktabs = T) %>%
+#    kable_styling(full_width=F,position="left",bootstrap_options = c("striped", "hover"))
+#   countyTable
+
+```
+
+
+```{r}
+
+dfm= df %>% left_join(dfz,by="zipcode")
+#colnames(dfm)
+
+countyTable<-tabyl(dfm,county)%>%
+  arrange(desc(n))%>%
+  adorn_totals('row')%>%
+  adorn_pct_formatting()%>%
+ kable( booktabs = T) %>%
+ kable_styling(full_width=F,position="left",bootstrap_options = c("striped", "hover"))%>%
+  scroll_box(width = "235px",height="430px")
+countyTable
+
+```
+
+
+
+
+
+
+```{r}
+#\newpage
+```
+
+
+
+
+
+
+
+```{r warning = FALSE, message=FALSE}
+
+#   datatable(dfcountygp1,
+#             rownames=F,
+#             options=list(order=list(1,"desc"))) %>% # order list =sort col 1 desc
+ # options=list()%>% 
+#     formatStyle('density', 
+#                 fontWeight = styleInterval(5, c('normal', 'bold')
+       #                    )
+#                 ) %>%
+#    formatStyle( 'density',
+#                 background = styleColorBar(dfcountygp1$density,'steelblue'),
+#                 backgroundSize = '100% 90%',
+#                 backgroundRepeat = 'no-repeat',
+ #                backgroundPosition = 'center')
+ 
+  
+```
+
+
+
+
+```{r warning = FALSE, message=FALSE}
+
+ 
+  
+```
+
+
+
+
+<p>
+
+ 
+
+</p>
+
+
+
+
+
+
+
+
+\newpage
+
+
+
+
+
+
+
+
+ 
