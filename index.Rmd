@@ -32,7 +32,7 @@ This is a template example for lab journaling. Students in Matt Crump's Human Co
 </div>
 <div class="col-sm-6">
 
-### [MICROSOFT POWER BI](https://app.powerbi.com/links/b-WsukYQSK?ctid=229e7cca-5e70-4d27-b98e-5cb576db79e8&pbi_source=linkShare)
+### [MICROSOFT POWER BI]()
 
 <a href = "https://crumplab.github.io">
 ![](images/logo.png)
