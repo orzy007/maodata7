@@ -515,8 +515,7 @@ detach(df)
 
 <p>
 
-- On the y-axis, "ptn" represents patients medical record number.
-- Hovering around the dot shows the date of last encounter for the specific patient and the medical record number.
+
 
  
  
